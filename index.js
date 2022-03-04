@@ -33,7 +33,7 @@ const args = yargs(hideBin(process.argv))
 	.option('delay', {
 		alias: 't',
 		type: 'number',
-		default: 750,
+		default: 500,
 		describe: 'download rate limit (in ms)',
 	})
 	.option('directory', {
