@@ -3,7 +3,6 @@ import path from 'path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import chalk from 'chalk';
-import fetch from 'node-fetch';
 import { getBrand, getSeason, getBrandSeason } from './api.mjs';
 import * as util from './util.mjs';
 
