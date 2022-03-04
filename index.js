@@ -126,53 +126,54 @@ for (const brand of brands) {
 		// console.log(chalk.bgMagentaBright(` https://www.vogue.com/${season.slug}/${brand.slug} `));
 
 		for (const galleryType of galleryTypes) {
-			// if --no-[galleryType] argument isn't passed...
-			if (args[galleryType] !== false) {
-				const imageUrls = brandSeasonData?.galleries?.[galleryType]?.slidesV2?.slide?.map(
-					(element) => element.photosTout.url
-				);
+			// if --no-[galleryType] argument is passed...
+			if (args[galleryType] === false)
+				continue;
 
-				const galleryPrefix = chalk.bgGray(` ${galleryType} `);
+			const galleryPrefix = chalk.bgGray(` ${galleryType} `);
 
-				// if gallery doesn't contain images...
-				if (!imageUrls) {
-					console.log(`${galleryPrefix} non-existant gallery`);
-					continue;
-				}
+			const imageUrls = brandSeasonData?.galleries?.[galleryType]?.slidesV2?.slide?.map(
+				(element) => element.photosTout.url
+			);
 
-				// create directory for respective gallery
-				const galleryDirectory = path.join(brandSeasonDirectory, galleryType);
-				fs.mkdirSync(galleryDirectory, { recursive: true });
+			// if gallery doesn't contain images...
+			if (!imageUrls) {
+				console.log(`${galleryPrefix} non-existent gallery`);
+				continue;
+			}
 
-				for (let i = 0, imageUrlsLength = imageUrls.length; i < imageUrlsLength; i++) {
-					const fileName = util.getUrlFileName(imageUrls[i]);
-					const downloadPath = path.join(galleryDirectory, fileName);
+			// create directory for respective gallery
+			const galleryDirectory = path.join(brandSeasonDirectory, galleryType);
+			fs.mkdirSync(galleryDirectory, { recursive: true });
 
-					const progressPrefix =
-						` ${(i + 1).toString().padStart(imageUrlsLength.toString().length)}/${imageUrlsLength} `;
+			for (let i = 0, imageUrlsLength = imageUrls.length; i < imageUrlsLength; i++) {
+				const progressPrefix =
+					` ${(i + 1).toString().padStart(imageUrlsLength.toString().length)}/${imageUrlsLength} `;
 
-					// if file doesn't already exist...
-					if (!fs.existsSync(downloadPath)) {
-						await util.downloadFile(downloadPath, imageUrls[i]).then(
-							// success
-							async () => {
-								console.log(
-									`${galleryPrefix}${chalk.bgGreenBright(progressPrefix)} downloaded ${fileName}`
-								);
-								await util.sleep(args.delay);
-							},
-							// failure
-							() => {
-								console.log(
-									`${galleryPrefix}${chalk.bgRedBright(progressPrefix)} failed to download ${fileName}`
-								);
-							}
-						);
-					} else {
-						console.log(
-							`${galleryPrefix}${chalk.bgYellowBright(progressPrefix)} ${fileName} exists`
-						);
-					}
+				const fileName = util.getUrlFileName(imageUrls[i]);
+				const downloadPath = path.join(galleryDirectory, fileName);
+
+				// if file doesn't already exist...
+				if (!fs.existsSync(downloadPath)) {
+					await util.downloadFile(downloadPath, imageUrls[i]).then(
+						// success
+						async () => {
+							console.log(
+								`${galleryPrefix}${chalk.bgGreenBright(progressPrefix)} downloaded ${fileName}`
+							);
+							await util.sleep(args.delay);
+						},
+						// failure
+						() => {
+							console.log(
+								`${galleryPrefix}${chalk.bgRedBright(progressPrefix)} failed to download ${fileName}`
+							);
+						}
+					);
+				} else {
+					console.log(
+						`${galleryPrefix}${chalk.bgYellowBright(progressPrefix)} ${fileName} already exists`
+					);
 				}
 			}
 		}
