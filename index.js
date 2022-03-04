@@ -63,21 +63,21 @@ if (args.help) {
 		[
 			header('download by brand and season:'),
 			argument('-b, --brand <slugs...>'),
-			description('one or more Vogue show URL brand slugs'),
+			description('Vogue URL brand slug(s)'),
 			argument('-s, --season <slugs...>'),
-			description('one or more Vogue show URL season slugs'),
+			description('Vogue URL season slug(s)'),
 			'',
 			header('download by URL:'),
 			argument('-u, --url <URLs...>'),
-			description('one or more Vogue show URLs'),
+			description('Vogue show URL(s)'),
 			'',
 			header('options:'),
 			argument(`-d, --directory <path="${defaultArgs.directory}">`),
 			description('download parent directory'),
 			argument(`-t, --delay <time=${defaultArgs.delay}>`),
-			description('time to wait between each download (in milliseconds)'),
+			description('time to wait between each download (in ms)'),
 			argument('--no-collection, --no-atmosphere, --no-beauty, --no-detail, --no-front-row'),
-			description('skip the specified gallery when downloading')
+			description('omit the specified gallery from download')
 		].join('\n')
 	);
 
