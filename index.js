@@ -111,67 +111,67 @@ for (const brand of brands) {
 		// obtain brand + season combination info from API
 		const brandSeasonData = (await getBrandSeason(brand.slug, season.slug)).fashionShowV2;
 
-		// if brand + season combination is valid...
-		if (brandSeasonData) {
-			// create parent directory structure
-			const brandSeasonDirectory = path.join(args.directory, brand.name, season.name);
-			fs.mkdirSync(brandSeasonDirectory, { recursive: true });
+		// if brand + season combination isn't valid...
+		if (!brandSeasonData)
+			util.warn(`invalid season '${season.slug}' for brand '${brand.slug}'`);
 
-			console.log(
-				chalk.bgMagentaBright(` ${brand.name} (${brand.slug}) `) +
-				chalk.bgBlueBright(` ${season.name} (${season.slug}) `)
-			);
-			// console.log(chalk.bgMagentaBright(` https://www.vogue.com/${season.slug}/${brand.slug} `));
+		// create parent directory structure
+		const brandSeasonDirectory = path.join(args.directory, brand.name, season.name);
+		fs.mkdirSync(brandSeasonDirectory, { recursive: true });
 
-			for (const galleryType of galleryTypes) {
-				// if --no-[galleryType] argument isn't passed...
-				if (args[galleryType] !== false) {
-					const imageUrls = brandSeasonData?.galleries?.[galleryType]?.slidesV2?.slide?.map(
-						(element) => element.photosTout.url
-					);
+		console.log(
+			chalk.bgMagentaBright(` ${brand.name} (${brand.slug}) `) +
+			chalk.bgBlueBright(` ${season.name} (${season.slug}) `)
+		);
+		// console.log(chalk.bgMagentaBright(` https://www.vogue.com/${season.slug}/${brand.slug} `));
 
-					const galleryPrefix = chalk.bgGray(` ${galleryType} `);
+		for (const galleryType of galleryTypes) {
+			// if --no-[galleryType] argument isn't passed...
+			if (args[galleryType] !== false) {
+				const imageUrls = brandSeasonData?.galleries?.[galleryType]?.slidesV2?.slide?.map(
+					(element) => element.photosTout.url
+				);
 
-					// if gallery contains images...
-					if (imageUrls) {
-						// create directory for respective gallery
-						const galleryDirectory = path.join(brandSeasonDirectory, galleryType);
-						fs.mkdirSync(galleryDirectory, { recursive: true });
+				const galleryPrefix = chalk.bgGray(` ${galleryType} `);
 
-						for (let i = 0, imageUrlsLength = imageUrls.length; i < imageUrlsLength; i++) {
-							const fileName = util.getUrlFileName(imageUrls[i]);
-							const downloadPath = path.join(galleryDirectory, fileName);
+				// if gallery doesn't contain images...
+				if (!imageUrls) {
+					console.log(`${galleryPrefix} non-existant gallery`);
+					continue;
+				}
 
-							const progressPrefix =
-								` ${(i + 1).toString().padStart(imageUrlsLength.toString().length)}/${imageUrlsLength} `;
+				// create directory for respective gallery
+				const galleryDirectory = path.join(brandSeasonDirectory, galleryType);
+				fs.mkdirSync(galleryDirectory, { recursive: true });
 
-							// if file doesn't already exist...
-							if (!fs.existsSync(downloadPath)) {
-								await downloadFile(downloadPath, imageUrls[i])
-									.then(async () => {
-										console.log(
-											`${galleryPrefix}${chalk.bgGreenBright(progressPrefix)} downloaded ${fileName}`
-										);
-										await sleep(args.delay);
-									})
-									.catch(() => {
-										console.log(
-											`${galleryPrefix}${chalk.bgRedBright(progressPrefix)} failed to download ${fileName}`
-										);
-									});
-							} else {
+				for (let i = 0, imageUrlsLength = imageUrls.length; i < imageUrlsLength; i++) {
+					const fileName = util.getUrlFileName(imageUrls[i]);
+					const downloadPath = path.join(galleryDirectory, fileName);
+
+					const progressPrefix =
+						` ${(i + 1).toString().padStart(imageUrlsLength.toString().length)}/${imageUrlsLength} `;
+
+					// if file doesn't already exist...
+					if (!fs.existsSync(downloadPath)) {
+						await downloadFile(downloadPath, imageUrls[i])
+							.then(async () => {
 								console.log(
-									`${galleryPrefix}${chalk.bgYellowBright(progressPrefix)} ${fileName} exists`
+									`${galleryPrefix}${chalk.bgGreenBright(progressPrefix)} downloaded ${fileName}`
 								);
-							}
-						}
+								await sleep(args.delay);
+							})
+							.catch(() => {
+								console.log(
+									`${galleryPrefix}${chalk.bgRedBright(progressPrefix)} failed to download ${fileName}`
+								);
+							});
 					} else {
-						console.log(`${galleryPrefix} non-existant gallery`);
+						console.log(
+							`${galleryPrefix}${chalk.bgYellowBright(progressPrefix)} ${fileName} exists`
+						);
 					}
 				}
 			}
-		} else {
-			util.warn(`invalid season '${season.slug}' for brand '${brand.slug}'`);
 		}
 	}
 }
