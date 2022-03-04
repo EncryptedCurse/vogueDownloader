@@ -6,11 +6,14 @@ import chalk from 'chalk';
 import { getBrand, getSeason, getBrandSeason } from './api.mjs';
 import * as util from './util.mjs';
 
+const defaultArgs = {
+	delay: 500,
+	directory: process.cwd(),
+}
 const args = yargs(hideBin(process.argv))
 	.option('brand', {
 		alias: 'b',
 		type: 'array',
-		describe: 'Vogue URL brand slug',
 		coerce: util.getArrayLowerCase,
 		// implies: 'season',
 		// conflicts: 'url',
@@ -18,7 +21,6 @@ const args = yargs(hideBin(process.argv))
 	.option('season', {
 		alias: 's',
 		type: 'array',
-		describe: 'Vogue URL season slug',
 		coerce: util.getArrayLowerCase,
 		// implies: 'brand',
 		// conflicts: 'url',
@@ -26,48 +28,61 @@ const args = yargs(hideBin(process.argv))
 	.option('url', {
 		alias: 'u',
 		type: 'array',
-		describe: 'Vogue URL',
 		coerce: util.getArrayLowerCase,
 		// conflicts: ['brand', 'season'],
 	})
 	.option('delay', {
 		alias: 't',
 		type: 'number',
-		default: 500,
-		describe: 'download rate limit (in ms)',
+		default: defaultArgs.delay,
 	})
 	.option('directory', {
 		alias: 'd',
 		type: 'string',
-		default: process.cwd(),
-		describe: 'download parent directory',
+		default: defaultArgs.directory,
 	})
-	.option('no-collection', {
-		type: 'boolean',
-		describe: "don't download collection gallery",
-	})
-	.option('no-atmosphere', {
-		type: 'boolean',
-		describe: "don't download atmosphere gallery",
-	})
-	.option('no-beauty', {
-		type: 'boolean',
-		describe: "don't download beauty gallery",
-	})
-	.option('no-detail', {
-		type: 'boolean',
-		describe: "don't download detail gallery",
-	})
-	.option('no-frontRow', {
-		type: 'boolean',
-		describe: "don't download front row gallery",
-	})
+	.option('no-collection', { type: 'boolean' })
+	.option('no-atmosphere', { type: 'boolean' })
+	.option('no-beauty',     { type: 'boolean' })
+	.option('no-detail',     { type: 'boolean' })
+	.option('no-front-row',  { type: 'boolean' })
 	.parserConfiguration({
 		'duplicate-arguments-array': false,
+		'strip-dashed': true,
     })
 	.help(false)
 	.showHelpOnFail(false)
 	.argv;
+
+if (args.help) {
+	const header = chalk.magentaBright.bold;
+	const argument = (text) => `    ${text}`;
+	const description = (text) => chalk.gray(`        ${text}`);
+
+	console.log(
+		[
+			header('download by brand and season:'),
+			argument('-b, --brand <slugs...>'),
+			description('one or more Vogue show URL brand slugs'),
+			argument('-s, --season <slugs...>'),
+			description('one or more Vogue show URL season slugs'),
+			'',
+			header('download by URL:'),
+			argument('-u, --url <URLs...>'),
+			description('one or more Vogue show URLs'),
+			'',
+			header('options:'),
+			argument(`-d, --directory <path="${defaultArgs.directory}">`),
+			description('download parent directory'),
+			argument(`-t, --delay <time=${defaultArgs.delay}>`),
+			description('time to wait between each download (in milliseconds)'),
+			argument('--no-collection, --no-atmosphere, --no-beauty, --no-detail, --no-front-row'),
+			description('skip the specified gallery when downloading')
+		].join('\n')
+	);
+
+	process.exit();
+}
 
 // validate command-line arguments
 try {
