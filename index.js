@@ -153,18 +153,21 @@ for (const brand of brands) {
 
 					// if file doesn't already exist...
 					if (!fs.existsSync(downloadPath)) {
-						await downloadFile(downloadPath, imageUrls[i])
-							.then(async () => {
+						await util.downloadFile(downloadPath, imageUrls[i]).then(
+							// success
+							async () => {
 								console.log(
 									`${galleryPrefix}${chalk.bgGreenBright(progressPrefix)} downloaded ${fileName}`
 								);
-								await sleep(args.delay);
-							})
-							.catch(() => {
+								await util.sleep(args.delay);
+							},
+							// failure
+							() => {
 								console.log(
 									`${galleryPrefix}${chalk.bgRedBright(progressPrefix)} failed to download ${fileName}`
 								);
-							});
+							}
+						);
 					} else {
 						console.log(
 							`${galleryPrefix}${chalk.bgYellowBright(progressPrefix)} ${fileName} exists`
