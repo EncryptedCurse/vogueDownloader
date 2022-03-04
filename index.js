@@ -42,24 +42,50 @@ const args = yargs(hideBin(process.argv))
 		default: process.cwd(),
 		describe: 'download parent directory',
 	})
+	.option('no-collection', {
+		type: 'boolean',
+		describe: "don't download collection gallery",
+	})
+	.option('no-atmosphere', {
+		type: 'boolean',
+		describe: "don't download atmosphere gallery",
+	})
+	.option('no-beauty', {
+		type: 'boolean',
+		describe: "don't download beauty gallery",
+	})
+	.option('no-detail', {
+		type: 'boolean',
+		describe: "don't download detail gallery",
+	})
+	.option('no-frontRow', {
+		type: 'boolean',
+		describe: "don't download front row gallery",
+	})
+	.parserConfiguration({
+		'duplicate-arguments-array': false,
+    })
 	.help(false)
 	.showHelpOnFail(false)
-	.version(false)
 	.argv;
 
 // validate command-line arguments
 try {
+	// if no arguments are provided...
+	if (args.brand === undefined && args.season === undefined && args.url === undefined)
+		throw `invalid arguments`;
+
 	// if both (--`season` or `--brand`) and `--url` are provided...
 	if ((args.brand !== undefined || args.season !== undefined) && args.url !== undefined)
 		throw `invalid arguments; ${chalk.italic('--brand')} and ${chalk.italic('--season')} are mutually exclusive from ${chalk.italic('--url')}`;
 
 	// if `--brand` is provided but `--season` isn't...
 	if (args.brand && !args.season?.length)
-		throw 'must specify season';
+		throw 'invalid arguments; must specify season';
 
 	// if `--season` is provided but `--brand` isn't...
 	if (args.season && !args.brand?.length)
-		throw 'must specify brand';
+		throw 'invalid arguments; must specify brand';
 } catch (e) {
 	util.error(e, 2);
 }
@@ -126,7 +152,7 @@ for (const brand of brands) {
 		// console.log(chalk.bgMagentaBright(` https://www.vogue.com/${season.slug}/${brand.slug} `));
 
 		for (const galleryType of galleryTypes) {
-			// if --no-[galleryType] argument is passed...
+			// if --no-<galleryType> argument is provided...
 			if (args[galleryType] === false)
 				continue;
 
