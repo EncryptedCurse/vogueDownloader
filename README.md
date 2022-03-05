@@ -38,3 +38,7 @@ URLs must be in the following format:
 ```
 vogue.com/fashion-shows/<season>/<brand>/
 ```
+### Example Command
+```
+node index.js -b undercover -s fall-2006-ready-to-wear
+```
